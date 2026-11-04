@@ -1,0 +1,29 @@
+name: Sync LeetCode
+
+on:
+  schedule:
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+      LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+    steps:
+      - name: Pomiń, jeśli brak sekretów
+        if: env.LEETCODE_SESSION == '' || env.LEETCODE_CSRF_TOKEN == ''
+        run: echo "Brak sekretów — pomijam."
+
+      - name: Synchronizuj rozwiązania
+        if: env.LEETCODE_SESSION != '' && env.LEETCODE_CSRF_TOKEN != ''
+        uses: joshcai/leetcode-sync@6749b872e89b3c10d213a6e599a7424584c1fa10 # v1.7
+        with:
+          github-token: ${{ github.token }}
+          leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+          destination-folder: problems
